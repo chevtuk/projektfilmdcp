@@ -16,5 +16,10 @@
     {% if result %}
         <h2>{{ result }}</h2>
     {% endif %}
+    {% if movie_url %}
+        <h3>
+            <a href="{{ movie_url }}" target="_blank">View Movie on svenskfilmdatabas</a>
+        </h3>
+    {% endif %}
 </body>
 </html>

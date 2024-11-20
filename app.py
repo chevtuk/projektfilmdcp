@@ -89,10 +89,11 @@ def index():
                 result = f"DCP is not mentioned for '{movie_title}' ({year_display})."
         else:
             result = "Could not find the movie."
+            movie_url = None
 
-        return render_template('index.html', result=result)
+        return render_template('index.html', result=result, movie_url=movie_url)
 
-    return render_template('index.html', result=None)
+    return render_template('index.html', result=None, movie_url=None)
 
 if __name__ == "__main__":
     import os
