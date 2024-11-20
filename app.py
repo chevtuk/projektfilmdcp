@@ -1,10 +1,20 @@
 from flask import Flask, request, render_template
 import requests
 from bs4 import BeautifulSoup
+import unicodedata
+import re
 
 app = Flask(__name__)
 
 SEARCH_URL = "https://www.svenskfilmdatabas.se/wp-admin/admin-ajax.php?action=quick_search&language=sv"
+
+def normalize_title(title):
+    """Normalize titles to lowercase and remove accents/special characters."""
+    # Remove accents and special characters
+    title = unicodedata.normalize('NFKD', title).encode('ascii', 'ignore').decode('utf-8')
+    # Remove non-alphanumeric characters (except spaces)
+    title = re.sub(r'[^a-zA-Z0-9\s]', '', title)
+    return title.lower().strip()
 
 def search_movie(title, year=None):
     params = {"s": title}
@@ -22,29 +32,43 @@ def search_movie(title, year=None):
     except Exception:
         return None, None
 
+    # Normalize input title
+    normalized_input_title = normalize_title(title)
+
+    best_match = None
+    best_year = None
+
     # Look for movies in the response
     for group in search_results:
         if "items" in group:
             for item in group["items"]:
                 if "type=film" in item["url"]:
-                    movie_title_with_year = item["title"]  # E.g., "Aftermath (2017)"
+                    movie_title_with_year = item["title"]  # E.g., "Sagan om de två tornen - härskarringen (2002)"
                     
+                    # Normalize movie title
+                    normalized_movie_title = normalize_title(movie_title_with_year)
+
+                    # Exclude trailers and other unwanted results
+                    if "trailer" in normalized_movie_title:
+                        continue
+
                     # Extract year from the title
                     found_year = None
                     if "(" in movie_title_with_year and ")" in movie_title_with_year:
                         found_year = movie_title_with_year.split("(")[-1].split(")")[0]
                     
-                    # Match title and optionally the year
-                    if title.lower() in movie_title_with_year.lower():
+                    # Check for exact or partial match
+                    if normalized_input_title in normalized_movie_title:
                         if year:
+                            # Match by year if provided
                             if f"({year})" in movie_title_with_year:
-                                movie_url = "https://www.svenskfilmdatabas.se" + item["url"]
-                                return movie_url, found_year
+                                return "https://www.svenskfilmdatabas.se" + item["url"], found_year
                         else:
-                            movie_url = "https://www.svenskfilmdatabas.se" + item["url"]
-                            return movie_url, found_year
+                            # Otherwise, prioritize the first match
+                            best_match = "https://www.svenskfilmdatabas.se" + item["url"]
+                            best_year = found_year
 
-    return None, None
+    return best_match, best_year
 
 def check_dcp_availability(movie_url):
     response = requests.get(movie_url)
@@ -99,4 +123,3 @@ if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 5000))  # Use the PORT environment variable or default to 5000
     app.run(host="0.0.0.0", port=port, debug=False)
-
