@@ -3,6 +3,10 @@ import requests
 from bs4 import BeautifulSoup
 import unicodedata
 import re
+from fuzzywuzzy import fuzz
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 
@@ -21,22 +25,29 @@ def search_movie(title, year=None):
     response = requests.get(SEARCH_URL, params=params)
     
     if response.status_code != 200:
+        logging.error("Failed to fetch search results.")
         return None, None
 
     # Remove BOM if present
     response_text = response.text.lstrip("\ufeff")
 
+    # Log raw response
+    logging.debug(f"Search response: {response_text}")
+
     # Attempt to parse the response as JSON
     try:
         search_results = eval(response_text)
-    except Exception:
+    except Exception as e:
+        logging.error(f"Error parsing search results: {e}")
         return None, None
 
     # Normalize input title
     normalized_input_title = normalize_title(title)
+    logging.debug(f"Normalized input title: {normalized_input_title}")
 
     best_match = None
     best_year = None
+    best_score = 0
 
     # Look for movies in the response
     for group in search_results:
@@ -47,26 +58,28 @@ def search_movie(title, year=None):
                     
                     # Normalize movie title
                     normalized_movie_title = normalize_title(movie_title_with_year)
+                    logging.debug(f"Checking movie title: {movie_title_with_year} (Normalized: {normalized_movie_title})")
 
                     # Exclude trailers and other unwanted results
                     if "trailer" in normalized_movie_title:
                         continue
 
-                    # Extract year from the title
-                    found_year = None
-                    if "(" in movie_title_with_year and ")" in movie_title_with_year:
-                        found_year = movie_title_with_year.split("(")[-1].split(")")[0]
-                    
-                    # Check for exact or partial match
-                    if normalized_input_title in normalized_movie_title:
-                        if year:
-                            # Match by year if provided
-                            if f"({year})" in movie_title_with_year:
-                                return "https://www.svenskfilmdatabas.se" + item["url"], found_year
-                        else:
-                            # Otherwise, prioritize the first match
-                            best_match = "https://www.svenskfilmdatabas.se" + item["url"]
-                            best_year = found_year
+                    # Calculate similarity score
+                    score = fuzz.ratio(normalized_input_title, normalized_movie_title)
+                    logging.debug(f"Similarity score: {score} for {movie_title_with_year}")
+
+                    if score > best_score and score > 70:  # Only consider matches above 70% similarity
+                        best_score = score
+                        found_year = None
+                        if "(" in movie_title_with_year and ")" in movie_title_with_year:
+                            found_year = movie_title_with_year.split("(")[-1].split(")")[0]
+                        best_match = "https://www.svenskfilmdatabas.se" + item["url"]
+                        best_year = found_year
+
+    if best_match:
+        logging.debug(f"Best match: {best_match}")
+    else:
+        logging.warning("No matching movie found.")
 
     return best_match, best_year
 
