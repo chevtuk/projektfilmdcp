@@ -48,7 +48,6 @@ def search_movie(title, year=None):
     best_match = None
     best_year = None
     best_score = 0
-
     # Look for movies in the response
     for group in search_results:
         if "items" in group:
@@ -68,7 +67,7 @@ def search_movie(title, year=None):
                     score = fuzz.ratio(normalized_input_title, normalized_movie_title)
                     logging.debug(f"Similarity score: {score} for {movie_title_with_year}")
 
-                    if score > best_score and score > 70:  # Only consider matches above 70% similarity
+                    if score > best_score:
                         best_score = score
                         found_year = None
                         if "(" in movie_title_with_year and ")" in movie_title_with_year:
