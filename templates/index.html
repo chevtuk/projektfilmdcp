@@ -1,25 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sv">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie DCP Checker</title>
+    <title>Kontrollera DCP-tillgänglighet</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: #007bff;
+        }
+        button {
+            padding: 12px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        h2 {
+            color: #28a745;
+            margin-top: 20px;
+            font-size: 20px;
+        }
+        h3 {
+            margin-top: 15px;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            input[type="text"], button {
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Check DCP Availability</h1>
-    <form method="post">
-        <input type="text" name="movie_title" placeholder="Enter movie title" required>
-        <input type="text" name="release_year" placeholder="Enter release year (optional)">
-        <button type="submit">Check</button>
-    </form>
+    <div class="container">
+        <h1>Kontrollera DCP-tillgänglighet</h1>
+        <form method="post">
+            <input type="text" name="movie_title" placeholder="Ange filmtitel" required>
+            <input type="text" name="release_year" placeholder="Ange utgivningsår (valfritt)">
+            <button type="submit">Kontrollera</button>
+        </form>
 
-    {% if result %}
-        <h2>{{ result }}</h2>
-    {% endif %}
-    {% if movie_url %}
-        <h3>
-            <a href="{{ movie_url }}" target="_blank">View Movie on svenskfilmdatabas</a>
-        </h3>
-    {% endif %}
+        {% if result %}
+            <h2>{{ result }}</h2>
+        {% endif %}
+        {% if movie_url %}
+            <h3>
+                <a href="{{ movie_url }}" target="_blank">Se filmen på Svensk Filmdatabas</a>
+            </h3>
+        {% endif %}
+    </div>
 </body>
 </html>
