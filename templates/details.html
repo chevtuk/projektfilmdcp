@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>DCP Status Detaljer - {{ movie_data.title if movie_data else 'Fel' }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* --- Grundläggande Retro Stil (Liknande index.html) --- */
+        :root {
+            --main-color: #2c9080; /* Cyan/Teal */
+            --text-color: #e0e0e0; /* Ljus text */
+            --bg-color: #000000;
+            --border-color: #383838;
+            --box-bg-color: rgba(10, 10, 10, 0.8);
+            --glow-shadow: 0 0 8px rgba(44, 144, 128, 0.7);
+            --success-color: #28a745; /* Grön för Ja */
+            --fail-color: #ff4136; /* Röd för Nej / Fel */
+            --input-bg: #1a1a1a;
+        }
+
+        body {
+            font-family: 'MS Gothic', 'Courier New', monospace;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            font-smooth: never;
+            -webkit-font-smoothing: none;
+            image-rendering: pixelated;
+            text-shadow: 0 0 3px rgba(224, 224, 224, 0.1);
+            display: flex;
+            flex-direction: column; /* Centrera vertikalt och lämna plats för header/footer om det behövs */
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh; /* Se till att innehållet centreras även om det är lite */
+        }
+
+        .container {
+            max-width: 700px;
+            width: 90%; /* Gör den lite responsiv */
+            margin: 20px auto;
+            padding: 25px 30px;
+            background-color: var(--box-bg-color);
+            border: 2px solid var(--border-color);
+            text-align: center;
+        }
+
+        h1 { /* Filmens titel */
+            font-family: 'Press Start 2P', 'Courier New', monospace;
+            color: var(--main-color);
+            margin-top: 0;
+            margin-bottom: 30px; /* Mer utrymme under titeln */
+            font-size: 1.5em; /* Anpassa efter behov */
+            line-height: 1.4;
+            text-shadow: var(--glow-shadow);
+            letter-spacing: 1px;
+        }
+
+        /* Statusmeddelande för DCP */
+        .status {
+            font-size: 1.4em;
+            margin-bottom: 30px; /* Mer utrymme under status */
+            font-weight: bold;
+            letter-spacing: 1px;
+            padding: 10px;
+            border: 1px dashed; /* Streckad ram runt status */
+        }
+
+        .status-yes {
+            color: var(--success-color);
+            border-color: var(--success-color);
+            text-shadow: 0 0 5px var(--success-color);
+        }
+
+        .status-no {
+            color: var(--fail-color);
+            border-color: var(--fail-color);
+            text-shadow: 0 0 5px var(--fail-color);
+        }
+
+        /* Länk till SFDb */
+        .sfdb-link a {
+            background-color: var(--input-bg);
+            color: var(--main-color);
+            padding: 10px 20px;
+            border: 1px solid var(--main-color);
+            font-size: 1em;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: inline-block; /* För att padding ska fungera bra */
+            margin-bottom: 30px; /* Utrymme till nästa länk */
+        }
+        .sfdb-link a:hover {
+            background-color: var(--main-color);
+            color: var(--bg-color);
+            box-shadow: var(--glow-shadow);
+        }
+
+        /* Länk för att gå tillbaka */
+         .back-link a {
+             color: var(--text-color);
+             text-decoration: none;
+             font-size: 0.9em;
+             margin-top: 15px; /* Lite mindre utrymme här */
+             display: inline-block;
+             transition: color 0.2s;
+         }
+         .back-link a:hover {
+             color: var(--main-color);
+             text-decoration: underline;
+         }
+
+        /* Felmeddelande */
+        p.error {
+            text-align: center;
+            color: var(--fail-color);
+            font-size: 1.1em;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 5px var(--fail-color);
+            letter-spacing: 1px;
+            border: 1px dashed var(--fail-color);
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if error %}
+            <h1>Fel</h1>
+            <p class="error">>> {{ error }}</p>
+        {% elif movie_data %}
+            <h1>{{ movie_data.title }}</h1>
+
+            {% if movie_data.dcp_available %}
+                <p class="status status-yes">DCP Status: TILLGÄNGLIG</p>
+            {% else %}
+                <p class="status status-no">DCP Status: NÄMNS EJ / OKÄND</p>
+            {% endif %}
+
+            <p class="sfdb-link">
+                <a href="{{ movie_data.url }}" target="_blank" rel="noopener noreferrer">Visa på Svensk Filmdatabas</a>
+            </p>
+        {% else %}
+             <h1>Information saknas</h1>
+             <p class="error">>> Kunde inte ladda filmdata.</p>
+        {% endif %}
+
+         <p class="back-link">
+             <a href="{{ url_for('index') }}">&lt;&lt; Tillbaka till sök</a>
+         </p>
+    </div>
+</body>
+</html>
